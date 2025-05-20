@@ -47,3 +47,17 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+*.DS_Store
+
+# figures
+Figures
+
+# model output
+Model-output
+
+# sequence data (deposited on NCBI: PRJNA1209072)
+Raw-data/sequence
+
+# Polme et al. 2020 (Fungal Diversity)
+Raw-data/Fungal-trait-database

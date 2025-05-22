@@ -828,6 +828,7 @@ keep <- which(complete.cases(soildat2[,c("GMC", "noN", "nhN", "WEC", "MBC", "BG"
 #                      distance = "bray",
 #                      data = soildat2[keep, ], na.action = "na.omit")
 # myrdaall_s <- ordistep(myrdaall, perm.max = 10)
+
 formula_s <- str_split((summary(myrdaall_s))[5], pattern="~")
 formula_s <- str_split(formula_s[[1]][2], pattern=",")
 preds <- formula_s[[1]][1]
@@ -862,6 +863,9 @@ df2  <- data.frame(summary(myrdaall)$biplot) # loadings: only keep top rated for
 df3 <- df2
 var1 <- round(read.csv(paste0("Model-output/db-rda/",name,"_all_variance-explained.csv"), row.names = 1)[2,1]*100, 2)
 var2 <- round(read.csv(paste0("Model-output/db-rda/",name,"_all_variance-explained.csv"), row.names = 1)[2,2]*100, 2)
+
+# save.image("Model-output/db-rda/Fungi-all-dat.RData")
+load("Model-output/db-rda/Fungi-all-dat.RData") # start from here if revising plot
 
 # Extract species (fungal families) scores
 species_scores <- scores(myrdaall, display = "species")
@@ -1083,6 +1087,8 @@ for(i in 1:length(seasons)) {
   df3[[i]] <- df2
 }
 
+# save.image("Model-output/db-rda/Fungi-dat.RData")
+load("Model-output/db-rda/Fungi-dat.RData") 
 
 
 # get variance explained
@@ -1103,9 +1109,9 @@ plotList <- lapply(
   1:length(seasons),
   function(key) {
     rdadat[[key]]$Cover <- as.factor(rdadat[[key]]$Cover)
-    rdadat[[key]]$Cover <- factor(rdadat[[key]]$Cover, levels(rdadat[[key]]$Cover)[c(2,4,1,5,3)])
+    #rdadat[[key]]$Cover <- factor(rdadat[[key]]$Cover, levels(rdadat[[key]]$Cover)[c(2,4,1,5,3)])
     rdadat[[key]]$Cropping.system <- as.factor(rdadat[[key]]$Cropping.system)
-    rdadat[[key]]$Cropping.system <- factor(rdadat[[key]]$Cropping.system, levels(rdadat[[key]]$Cropping.system)[c(1,4,3,2)])
+    #rdadat[[key]]$Cropping.system <- factor(rdadat[[key]]$Cropping.system, levels(rdadat[[key]]$Cropping.system)[c(1,4,3,2)])
     # Extract species (fungerial families) scores
     species_scores <- scores(myrdaall[[key]], display = "species")
     
@@ -1117,6 +1123,7 @@ plotList <- lapply(
     df_fung0$CAP1 <- df_fung0[, 1] * scaling_factor
     df_fung0$CAP2 <- df_fung0[, 2] * scaling_factor
     df_fung0$label <- taxabund$Phylum
+    df_fung0$label <- gsub("p__", "", df_fung0$label)
     df_fung[[key]] <- df_fung0 %>%
       group_by(label) %>%
       summarise(CAP1 = mean(CAP1, na.rm = TRUE),
@@ -1169,9 +1176,9 @@ plotList <- lapply(
   1:length(seasons),
   function(key) {
     rdadat[[key]]$Cover <- as.factor(rdadat[[key]]$Cover)
-    rdadat[[key]]$Cover <- factor(rdadat[[key]]$Cover, levels(rdadat[[key]]$Cover)[c(2,4,1,5,3)])
+    #rdadat[[key]]$Cover <- factor(rdadat[[key]]$Cover, levels(rdadat[[key]]$Cover)[c(2,4,1,5,3)])
     rdadat[[key]]$Cropping.system <- as.factor(rdadat[[key]]$Cropping.system)
-    rdadat[[key]]$Cropping.system <- factor(rdadat[[key]]$Cropping.system, levels(rdadat[[key]]$Cropping.system)[c(1,4,3,2)])
+    #rdadat[[key]]$Cropping.system <- factor(rdadat[[key]]$Cropping.system, levels(rdadat[[key]]$Cropping.system)[c(1,4,3,2)])
     # Extract species (fungerial families) scores
     species_scores <- scores(myrdaall[[key]], display = "species")
     
@@ -1249,6 +1256,8 @@ resp <- cbind(resp_list, .id = "timepoint")
 write.csv(t(mod.effects), paste0("Model-output/db-rda/*",name,"_dbrda_by timepoint.csv"))
 write.csv(vifs3, paste0("Model-output/db-rda/*",name,"_dbrda_by timepoint_vifs.csv"))
 write.csv(t(resp)[1,], paste0("Model-output/db-rda/*",name,"_dbrda_by timepoint_total-r2-sig.csv"))
+
+
 
 
 

@@ -863,7 +863,7 @@ write.csv(round(cbind(ef$vectors$arrows, ef$vectors$r),2), paste0("Model-output/
 # with soil property eigenvectors
 rdadat <- as.data.frame(summary(myrdaall)$sites) # sites
 rem <- which(complete.cases(soildat2[, c("GMC", "noN", "nhN", "WEC", "MBC", "BG",  "NAG", "PHOS")])==FALSE)
-rdadat <- cbind(rdadat, divdat[-rem, c("Season.Year", "Cover", "Cropping.system", "Year", "Season")])
+rdadat <- cbind(rdadat, divdat[-rem, c("Season.Year", "Cover", "Cropping.system", "Year", "Season")]) #
 df2  <- data.frame(summary(myrdaall)$biplot) # loadings: only keep top rated for first two axes
 df3 <- df2
 var1 <- round(read.csv(paste0("Model-output/db-rda/",name,"_all_variance-explained.csv"), row.names = 1)[2,1]*100, 2)
@@ -876,15 +876,15 @@ species_scores <- scores(myrdaall, display = "species")
 df_bact <- as.data.frame(species_scores[, 1:2])  # Only take first 2 axes (RDA1, RDA2)
 
 # Optionally scale for visual clarity (e.g., shrink arrows to reduce clutter)
-scaling_factor <- 300
+scaling_factor <- 200
 df_bact$CAP1 <- df_bact[, 1] * scaling_factor
 df_bact$CAP2 <- df_bact[, 2] * scaling_factor
-df_bact$label <- taxabund$Phylum
+df_bact$label <- taxabund$Phylum # could try with other biological levels
 df_bact <- df_bact %>%
   group_by(label) %>%
   summarise(CAP1 = mean(CAP1, na.rm = TRUE),
             CAP2 = mean(CAP2, na.rm = TRUE)) %>% 
-  mutate(sum = CAP1+CAP2) %>% 
+  mutate(sum = abs(CAP1)+(CAP2)) %>% 
   arrange(desc(sum)) %>% 
   top_n(10)
 
@@ -898,18 +898,20 @@ ggplot(rdadat, aes(CAP1, CAP2)) +
   guides(fill=guide_legend(title="Season and year", override.aes=list(shape=21)),
          shape=guide_legend(title="Cropping system")) +
   labs(x=paste0("RDA1 (", var1, "%)"), y=paste0("RDA2 (", var2, "%)"), title=name) + # amend according to variance explained
+  lims(x = c(-2,2), y = c(-2,3)) +
   # Bacterial family vectors
   geom_segment(data = df_bact, aes(x = 0, xend = CAP1, y = 0, yend = CAP2), 
-               color = "skyblue4", size = 0.75,
+               color = "magenta3", size = 0.75,
                arrow = arrow(length = unit(0.02, "npc"))) +
-  ggrepel::geom_label_repel(data = df_bact, aes(x = CAP1, y = CAP2, label = label), 
-             # hjust = 0.5 * (1 - sign(df_bact$CAP1)),
-             # vjust = 0.5 * (1 - sign(df_bact$CAP2)),
-             color = "skyblue4", size = 2) +
+  geom_label(data = df_bact, aes(x = CAP1, y = CAP2, label = label), 
+             hjust = 0.5 * (1 - sign(df_bact$CAP1)),
+             vjust = 0.5 * (1 - sign(df_bact$CAP2)),
+             color = "magenta3", label.size = NA, fill = alpha(c("white"),0.25), size = 2) +
   geom_segment(data=df3, aes(x=0, xend=CAP1, y=0, yend=CAP2), color="white", size=1.25,arrow=arrow(length=unit(0.02,"npc"))) +
   geom_segment(data=df3, aes(x=0, xend=CAP1, y=0, yend=CAP2), color="black", size=1,arrow=arrow(length=unit(0.02,"npc"))) +
   geom_label(data=df3, aes(x=df3$CAP1,y=df3$CAP2,label=rownames(df3)), 
-             hjust=0.5*(1-sign(df3$CAP1)),vjust=0.5*(1-sign(df3$CAP2)), fill = "white", size=2)
+             hjust=0.5*(1-sign(df3$CAP1)),vjust=0.5*(1-sign(df3$CAP2)), fill = "white", size=2) 
+  
 
 dev.off()
 
@@ -925,18 +927,19 @@ ggplot(rdadat, aes(CAP1, CAP2)) +
   guides(fill=guide_legend(title="Season and year", override.aes=list(shape=21)),
          shape=guide_legend(title="Cover")) +
   labs(x=paste0("RDA1 (", var1, "%)"), y=paste0("RDA2 (", var2, "%)"), title=name) + # amend according to variance explained
+  lims(x = c(-2,2), y = c(-2,3)) +
   # Bacterial family vectors
   geom_segment(data = df_bact, aes(x = 0, xend = CAP1, y = 0, yend = CAP2), 
-               color = "skyblue4", size = 0.75,
+               color = "magenta3", size = 0.75,
                arrow = arrow(length = unit(0.02, "npc"))) +
-  ggrepel::geom_label_repel(data = df_bact, aes(x = CAP1, y = CAP2, label = label), 
-                            # hjust = 0.5 * (1 - sign(df_bact$CAP1)),
-                            # vjust = 0.5 * (1 - sign(df_bact$CAP2)),
-                            color = "skyblue4", size = 2) +
+  geom_label(data = df_bact, aes(x = CAP1, y = CAP2, label = label), 
+             hjust = 0.5 * (1 - sign(df_bact$CAP1)),
+             vjust = 0.5 * (1 - sign(df_bact$CAP2)),
+             color = "magenta3", label.size = NA, fill = alpha(c("white"),0.25), size = 2) +
   geom_segment(data=df3, aes(x=0, xend=CAP1, y=0, yend=CAP2), color="white", size=1.25,arrow=arrow(length=unit(0.02,"npc"))) +
   geom_segment(data=df3, aes(x=0, xend=CAP1, y=0, yend=CAP2), color="black", size=1,arrow=arrow(length=unit(0.02,"npc"))) +
   geom_label(data=df3, aes(x=df3$CAP1,y=df3$CAP2,label=rownames(df3)), 
-             hjust=0.5*(1-sign(df3$CAP1)),vjust=0.5*(1-sign(df3$CAP2)), fill = "white", size=2)
+             hjust=0.5*(1-sign(df3$CAP1)),vjust=0.5*(1-sign(df3$CAP2)), fill = "white", size=2) 
 dev.off()
 
 
@@ -959,14 +962,14 @@ write.csv(t(mod.effects), paste0("Model-output/db-rda/",name,"_dbrda_all timepoi
 ####################################
 
 # import data for diversity
-divdat0 <- read.csv(paste0("Processed-data/sequences/", region,"-diversity.csv"))
+divdat <- read.csv(paste0("Processed-data/sequences/", region,"-diversity.csv"))
 divdat$Season.Year <- as.factor(divdat$Season.Year)
 divdat$Season <- as.factor(divdat$Season )
-#divdat$Season <- factor(divdat$Season, levels(divdat$Season)[c(2,3, 1)])
+divdat$Season <- factor(divdat$Season, levels(divdat$Season)[c(2,3, 1)])
 divdat$Cover <- as.factor(divdat$Cover)
-#divdat$Cover <- factor(divdat$Cover, levels(divdat$Cover)[c(2,1,4,5,3)])
+divdat$Cover <- factor(divdat$Cover, levels(divdat$Cover)[c(2,1,4,5,3)])
 divdat$Cropping.system <- as.factor(divdat$Cropping.system)
-#divdat$Cropping.system <- factor(divdat$Cropping.system, levels(divdat$Cropping.system)[c(1,4,3,2)])
+divdat$Cropping.system <- factor(divdat$Cropping.system, levels(divdat$Cropping.system)[c(1,4,3,2)])
 divdat$Replicate <- as.factor(divdat$Replicate)
 divdat$Year <- as.factor(divdat$Year)
 divdat <- divdat[which(divdat$new.name %in% rownames(divmat_pa)),]
@@ -987,10 +990,21 @@ mod.effects <- data.frame(effect=c("model", "residual"))
 seasons <- levels(soildat$season.year)
 # variance inflation factors
 vifs <- list(NA)
+# significance of overall model
+resp_list <- list(NA)
+times <- levels(soildat$season.year)
+time_l <- length(times)
+for(t in 1:time_l){
+  new_list <- list(NA)
+  resp_list <- c(resp_list, new_list)
+}
+resp_list <- resp_list[-1]
+names(resp_list) <- times
 # create lists to plot rdas later
 df3 <-  vector('list', length(seasons))
 rdadat <-  vector('list', length(seasons))
 myrdaall <- vector('list', length(seasons))
+divdat0 <- vector('list', length(seasons))
 var1 <- rep(NA, length(seasons))
 var2 <- rep(NA, length(seasons))
 
@@ -999,7 +1013,7 @@ for(i in 1:length(seasons)) {
   time <- seasons[i]
   ti_me <- gsub(pattern = " ", replacement = "_", time)
   
-  divdat[[i]] <- divdat0[which(divdat0$Season.Year == time),]
+  divdat0[[i]] <- divdat[which(divdat$Season.Year == time),]
   divmat_pa <- divmat_pa0[which(str_detect(rownames(divmat_pa0), pattern=ti_me)),]
   
   soildat2 <- soildat[which(soildat$Sample %in% rownames(divmat_pa)),]
@@ -1007,7 +1021,8 @@ for(i in 1:length(seasons)) {
   soildat2 <- soildat2[rownames(divmat_pa),]
   
   print(paste0("Starting ", time))
-  ###### rda: visualize how communities vary with treatment and soil properties 
+  
+  ###### rda: visualize how communities vary with treatment and soil properties
   
   # first determine which properties are co-linear so that we 
   # can exclude them from the rda if needed
@@ -1065,8 +1080,8 @@ for(i in 1:length(seasons)) {
   #### visualize: all by cropping system and cover
   # with soil property eigenvectors
   rdadat0 <- as.data.frame(summary(myrdaall[[i]])$sites) # sites
-  rownames(divdat[[i]]) <- divdat[[i]]$new.name
-  rdadat[[i]] <- merge(divdat[[i]], rdadat0, by = "row.names", all = TRUE)
+  rownames(divdat0[[i]]) <- divdat0[[i]]$new.name
+  rdadat[[i]] <- merge(divdat0[[i]], rdadat0, by = "row.names", all = TRUE)
   
   df2  <- data.frame(summary(myrdaall[[i]])$biplot) # loadings: only keep top rated for first two axes
   df3[[i]] <- df2
@@ -1101,7 +1116,7 @@ plotList <- lapply(
     df_bact0 <- as.data.frame(species_scores[, 1:2])  # Only take first 2 axes (RDA1, RDA2)
     
     # Optionally scale for visual clarity (e.g., shrink arrows to reduce clutter)
-    scaling_factor <- 300
+    scaling_factor <- 200
     df_bact0$CAP1 <- df_bact0[, 1] * scaling_factor
     df_bact0$CAP2 <- df_bact0[, 2] * scaling_factor
     df_bact0$label <- taxabund$Phylum
@@ -1109,14 +1124,14 @@ plotList <- lapply(
       group_by(label) %>%
       summarise(CAP1 = mean(CAP1, na.rm = TRUE),
                 CAP2 = mean(CAP2, na.rm = TRUE)) %>% 
-      mutate(sum = CAP1+CAP2) %>% 
+      mutate(sum = abs(CAP1)+(CAP2)) %>% 
       arrange(desc(sum)) %>% 
       top_n(5)
     # Need to assign the plot to a variable because 
     # you want to generate the plot AND save to file 
     x <- ggplot(rdadat[[key]], aes(CAP1, CAP2)) +
       geom_point(aes(fill=Cropping.system, shape=Cover), size=2) +
-      theme_bw() +
+      theme_bw() + 
       scale_fill_manual(values = cropsyscols) +
       scale_shape_manual(values = c(21:25)) +
       guides(fill=guide_legend(title="Cropping system", override.aes=list(shape=21, size=3)),
@@ -1124,22 +1139,19 @@ plotList <- lapply(
       labs(x=paste0("RDA1 (", var1[key], "%)"), y=paste0("RDA2 (", var2[key], "%)"), title=seasons[key]) + # amend according to variance explained
       theme(legend.text = element_text(size = 14), 
             legend.title = element_text(size = 16)) +
+      lims(x = c(-2.5,2), y = c(-2,3)) +
       # Bacterial family vectors
       geom_segment(data = df_bact[[key]], aes(x = 0, xend = CAP1, y = 0, yend = CAP2), 
-                   color = "skyblue4", size = 0.75,
+                   color = "magenta3", size = 0.75,
                    arrow = arrow(length = unit(0.02, "npc"))) +
       geom_label(data = df_bact[[key]], aes(x = CAP1, y = CAP2, label = label), 
                  hjust = 0.5 * (1 - sign(df_bact[[key]]$CAP1)),
                  vjust = 0.5 * (1 - sign(df_bact[[key]]$CAP2)),
-                 color = "skyblue4", size = 2) +
+                 color = "magenta3", label.size = NA, fill = alpha(c("white"),0.25), size = 2) +
       geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="white", size=1.25,arrow=arrow(length=unit(0.02,"npc"))) +
       geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="black", size=1,arrow=arrow(length=unit(0.02,"npc"))) +
       geom_label(data=df3[[key]], aes(x=df3[[key]]$CAP1,y=df3[[key]]$CAP2,label=rownames(df3[[key]])), 
                  hjust=0.5*(1-sign(df3[[key]]$CAP1)),vjust=0.5*(1-sign(df3[[key]]$CAP2)), fill = "white", size=2) 
-    # No need for the plot argument.  It defaults to the last plot created.
-    ggsave(filename = paste0("Figures/microbial-diversity/rda/", name, "-", key, ".jpg"), height = 5, width = 8)
-    # Return the plot just created
-    x
   }
 )
 
@@ -1149,7 +1161,7 @@ allplots <- ggarrange(plotlist=plotList,
                       labels = "AUTO", common.legend = T, legend = "right",
                       ncol = 3, nrow=5)
 
-png(paste0("Figures/microbial-diversity/rda/",name,"_dbrda-all1_across-timepoints.png"),  height=5000, width=4500, res = 300)
+png(paste0("Figures/microbial-diversity/rda/",name,"_dbrda-all1_across-timepoints.png"),  height=4000, width=3500, res = 300)
 allplots 
 dev.off()
 

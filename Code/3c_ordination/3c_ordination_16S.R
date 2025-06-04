@@ -1096,6 +1096,11 @@ for(i in 1:length(seasons)) {
 # save.image("Model-output/db-rda/Bacteria-dat.RData")
 load("Model-output/db-rda/Bacteria-dat.RData") # start from here if revising figures
 
+for(i in 1:length(df3)){
+  time <- seasons[i]
+  write.csv(df3[[i]], paste0("Model-output/db-rda/",name,"_all_model-predictors_", time, ".csv"))
+}
+
 
 # get variance explained
 for(i in 1:length(seasons)){
@@ -1135,12 +1140,23 @@ plotList <- lapply(
                 CAP2 = mean(CAP2, na.rm = TRUE)) %>% 
       mutate(sum = abs(CAP1)+(CAP2)) %>% 
       arrange(desc(sum)) %>% 
-      top_n(5)
+      top_n(3)
+    
+    df3[[key]] <- df3[[key]] %>%
+      mutate(
+        quadrant = case_when(
+          CAP1 > 0 & CAP2 > 0 ~ 45,
+          CAP1 < 0 & CAP2 > 0 ~ -45,
+          CAP1 < 0 & CAP2 < 0 ~ 45,
+          CAP1 > 0 & CAP2 < 0 ~ -45
+        )
+      )
+    
     # Need to assign the plot to a variable because 
     # you want to generate the plot AND save to file 
     x <- ggplot(rdadat[[key]], aes(CAP1, CAP2)) +
-      geom_point(aes(fill=Cropping.system, shape=Cover), size=2) +
-      theme_bw() + 
+      geom_point(aes(fill=Cropping.system, shape=Cover), size=2, alpha = 0.5) +
+      theme_bw() +
       scale_fill_manual(values = cropsyscols) +
       scale_shape_manual(values = c(21:25)) +
       guides(fill=guide_legend(title="Cropping system", override.aes=list(shape=21, size=3)),
@@ -1148,19 +1164,30 @@ plotList <- lapply(
       labs(x=paste0("RDA1 (", var1[key], "%)"), y=paste0("RDA2 (", var2[key], "%)"), title=seasons[key]) + # amend according to variance explained
       theme(legend.text = element_text(size = 14), 
             legend.title = element_text(size = 16)) +
-      lims(x = c(-2.5,2), y = c(-2,3)) +
-      # Bacterial family vectors
-      geom_segment(data = df_bact[[key]], aes(x = 0, xend = CAP1, y = 0, yend = CAP2), 
-                   color = "magenta3", size = 0.75,
-                   arrow = arrow(length = unit(0.02, "npc"))) +
-      geom_label(data = df_bact[[key]], aes(x = CAP1, y = CAP2, label = label), 
-                 hjust = 0.5 * (1 - sign(df_bact[[key]]$CAP1)),
-                 vjust = 0.5 * (1 - sign(df_bact[[key]]$CAP2)),
-                 color = "magenta3", label.size = NA, fill = alpha(c("white"),0.25), size = 2) +
-      geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="white", size=1.25,arrow=arrow(length=unit(0.02,"npc"))) +
-      geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="black", size=1,arrow=arrow(length=unit(0.02,"npc"))) +
-      geom_label(data=df3[[key]], aes(x=df3[[key]]$CAP1,y=df3[[key]]$CAP2,label=rownames(df3[[key]])), 
-                 hjust=0.5*(1-sign(df3[[key]]$CAP1)),vjust=0.5*(1-sign(df3[[key]]$CAP2)), fill = "white", size=2) 
+      lims(x = c(-2,2), y = c(-2,3)) +
+      # Fungal family vectors
+      # geom_segment(data = df_bact[[key]], aes(x = 0, xend = CAP1, y = 0, yend = CAP2), 
+      #              color = "magenta3", size = 0.75,
+      #              arrow = arrow(length = unit(0.02, "npc"))) +
+      # geom_label(data = df_bact[[key]], aes(x = CAP1, y = CAP2, label = label), 
+      #            hjust = 0.5 * (1 - sign(df_bact[[key]]$CAP1)),
+      #            vjust = 0.5 * (1 - sign(df_bact[[key]]$CAP2)),
+      #            color = "magenta3", label.size = NA, fill = alpha(c("white"),0.25), size = 3, fontface="italic") +
+      # Soil property vectors
+      geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="white", size=1,arrow=arrow(length=unit(0.02,"npc"))) +
+      geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="blue", size=0.75,arrow=arrow(length=unit(0.02,"npc"))) +
+      geom_text(data=df3[[key]], aes(x=df3[[key]]$CAP1,# + 0.4*sign(df3[[key]]$CAP1)*df3[[key]]$CAP1, 
+                                     y=df3[[key]]$CAP2,# + 0.4*sign(df3[[key]]$CAP2)*df3[[key]]$CAP2, 
+                                     angle = df3[[key]]$quadrant), 
+                label=rownames(df3[[key]]), size=3.2, fontface="bold", color = "white", 
+                hjust=0.5*(1-sign(df3[[key]]$CAP1)),
+                vjust=0.5*(1-sign(df3[[key]]$CAP2))) +
+      geom_text(data=df3[[key]], aes(x=df3[[key]]$CAP1,# + 0.4*sign(df3[[key]]$CAP1)*df3[[key]]$CAP1, 
+                                     y=df3[[key]]$CAP2,# + 0.4*sign(df3[[key]]$CAP2)*df3[[key]]$CAP2, 
+                                     angle = df3[[key]]$quadrant), 
+                label=rownames(df3[[key]]), size=3, fontface="bold", color = "blue", 
+                hjust=0.5*(1-sign(df3[[key]]$CAP1)),
+                vjust=0.5*(1-sign(df3[[key]]$CAP2)))
   }
 )
 

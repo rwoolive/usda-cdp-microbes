@@ -175,10 +175,10 @@ write.csv(t(resp_f_s), paste0("Model-output/*tables/permanova_sig.csv"))
 
 #### dbrda: variance by predictors
 rm(list=ls())
-regions <- c("Bacteria", "Fungi", "Fungi_AMF", "Fungi_plant pathogen", "Fungi_saprotroph")
-labels_main <- c("A) Bacteria", " B) Fungi", "C) Arbuscular mycorrhizal fungi", "D) Plant pathogenic fungi", "E) Saprotrophic fungi")
-legends <- c(F, T, F, F, F)
-widths <- c(1600, 1700, 1600, 1600, 1600)
+regions <- c("Bacteria", "Fungi")#, "Fungi_AMF", "Fungi_plant pathogen", "Fungi_saprotroph")
+labels_main <- c("A) Bacteria", " B) Fungi")#, "C) Arbuscular mycorrhizal fungi", "D) Plant pathogenic fungi", "E) Saprotrophic fungi")
+legends <- c(F, T)#, F, F, F)
+widths <- c(1600, 1700)#, 1600, 1600, 1600)
 seasons <- c("Fall 2020", 
              "Spring 2021", "Summer 2021", "Fall 2021",
              "Spring 2022", "Summer 2022", "Fall 2022",
@@ -190,9 +190,12 @@ seasons <- c("Fall 2020",
 for(m in 1:length(regions)){
   # read in data for each season
   resps <- list(NA)
+  modpreds <- list(NA)
   for(i in 1:length(seasons)){
     resp_1 <- read.csv(paste0("Model-output/db-rda/", regions[m], "_all_variance-by-predictors_", seasons[i], ".csv"))
     resps[[i]] <- resp_1
+    modpred_1 <- read.csv(paste0("Model-output/db-rda/",regions[m],"_all_model-predictors_", seasons[i], ".csv"))
+    modpreds[[i]] <- modpred_1
   }
   resps
   resps3 <- bind_rows(resps, .id = "timepoint")
@@ -225,9 +228,25 @@ for(m in 1:length(regions)){
   for(k in 1:dim(resp_s)[2]){
     resp_s[,k] <- makeStars(resp_s[,k])
   }
-
   
-  p <- pheatmap(as.matrix(t(resp_r)), display_numbers = as.matrix(t(resp_s)), legend = legends[m], 
+  # determine if it was retained in dbrda model
+  modpreds3 <- bind_rows(modpreds, .id = "timepoint")
+  modpreds3$timepoint_X <- paste0(modpreds3$timepoint, "_", modpreds3$X)
+  resps3$timepoint_X <- paste0(resps3$timepoint, "_", resps3$X)
+  resps3$mod <- rep("no", length(resps3$timepoint_X))
+  resps3$mod[which(resps3$timepoint_X %in% modpreds3$timepoint_X)] <- "yes"
+  resps4 <- resps3[,c("timepoint", "X", "mod")]
+  resps5 <- spread(data=resps4, key=timepoint, value=c(mod))
+  resps6 <- resps5[,-1]
+  rownames(resps6) <- resps5$X
+  resps6 <- resps6[, c(1, 6:13, 2:5)]
+  resp_mod <- as.data.frame(t(resps6))
+  rownames(resp_mod) <- seasons
+  # replace pvalues with asterisks
+  resp_o <- resp_mod
+  resp_o <- ifelse(resp_o == "yes", "x", "")
+  
+  p <- pheatmap(as.matrix(t(resp_r)), display_numbers = as.matrix(t(resp_o)), legend = legends[m], 
                 color = colorRampPalette(c("white", "cyan4"))(100), legend.breaks = seq(0, 1, by = 0.25), legend.labels = seq(0, 1, by = 0.25),
                 cluster_rows = F, cluster_cols = F, main=labels_main[m])
   
@@ -240,7 +259,7 @@ for(m in 1:length(regions)){
   
   save_pheatmap_png(p, filename = paste0("Figures/microbial-diversity/rda/", regions[m], ".png"), width=widths[m], height=1200, res=300)
   
-  write.csv(t(resp_r), paste0("Model-output/*tables/dbrda_variance-by-predictors_", regions[m], ".csv"))
+  write.csv(t(resp_r), paste0("Model-output/_tables/dbrda_variance-by-predictors_", regions[m], ".csv"))
 }  
 
 

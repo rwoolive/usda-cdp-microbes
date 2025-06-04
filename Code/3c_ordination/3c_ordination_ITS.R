@@ -1090,6 +1090,10 @@ for(i in 1:length(seasons)) {
 # save.image("Model-output/db-rda/Fungi-dat.RData")
 load("Model-output/db-rda/Fungi-dat.RData") 
 
+for(i in 1:length(df3)){
+  time <- seasons[i]
+  write.csv(df3[[i]], paste0("Model-output/db-rda/",name,"_all_model-predictors_", time, ".csv"))
+}
 
 # get variance explained
 for(i in 1:length(seasons)){
@@ -1130,12 +1134,22 @@ plotList <- lapply(
                 CAP2 = mean(CAP2, na.rm = TRUE)) %>% 
       mutate(sum = abs(CAP1)+(CAP2)) %>% 
       arrange(desc(sum)) %>% 
-      top_n(5)
+      top_n(3)
+    
+    df3[[key]] <- df3[[key]] %>%
+      mutate(
+        quadrant = case_when(
+          CAP1 > 0 & CAP2 > 0 ~ 45,
+          CAP1 < 0 & CAP2 > 0 ~ -45,
+          CAP1 < 0 & CAP2 < 0 ~ 45,
+          CAP1 > 0 & CAP2 < 0 ~ -45
+        )
+      )
     
     # Need to assign the plot to a variable because 
     # you want to generate the plot AND save to file 
     x <- ggplot(rdadat[[key]], aes(CAP1, CAP2)) +
-      geom_point(aes(fill=Cropping.system, shape=Cover), size=2) +
+      geom_point(aes(fill=Cropping.system, shape=Cover), size=2, alpha = 0.5) +
       theme_bw() +
       scale_fill_manual(values = cropsyscols) +
       scale_shape_manual(values = c(21:25)) +
@@ -1146,17 +1160,29 @@ plotList <- lapply(
             legend.title = element_text(size = 16)) +
       lims(x = c(-2,2), y = c(-2,3)) +
       # Fungal family vectors
-      geom_segment(data = df_fung[[key]], aes(x = 0, xend = CAP1, y = 0, yend = CAP2), 
-                   color = "magenta3", size = 0.75,
-                   arrow = arrow(length = unit(0.02, "npc"))) +
-      geom_label(data = df_fung[[key]], aes(x = CAP1, y = CAP2, label = label), 
-                 hjust = 0.5 * (1 - sign(df_fung[[key]]$CAP1)),
-                 vjust = 0.5 * (1 - sign(df_fung[[key]]$CAP2)),
-                 color = "magenta3", label.size = NA, fill = alpha(c("white"),0.25), size = 2) +
-      geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="white", size=1.25,arrow=arrow(length=unit(0.02,"npc"))) +
-      geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="black", size=1,arrow=arrow(length=unit(0.02,"npc"))) +
-      geom_label(data=df3[[key]], aes(x=df3[[key]]$CAP1,y=df3[[key]]$CAP2,label=rownames(df3[[key]])), 
-                 hjust=0.5*(1-sign(df3[[key]]$CAP1)),vjust=0.5*(1-sign(df3[[key]]$CAP2)), fill = "white", size=2) 
+      # geom_segment(data = df_fung[[key]], aes(x = 0, xend = CAP1, y = 0, yend = CAP2), 
+      #              color = "magenta3", size = 0.75,
+      #              arrow = arrow(length = unit(0.02, "npc"))) +
+      # geom_label(data = df_fung[[key]], aes(x = CAP1, y = CAP2, label = label), 
+      #            hjust = 0.5 * (1 - sign(df_fung[[key]]$CAP1)),
+      #            vjust = 0.5 * (1 - sign(df_fung[[key]]$CAP2)),
+      #            color = "magenta3", label.size = NA, fill = alpha(c("white"),0.25), size = 3, fontface="italic") +
+      # Soil property vectors
+      geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="white", size=1,arrow=arrow(length=unit(0.02,"npc"))) +
+      geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="blue", size=0.75,arrow=arrow(length=unit(0.02,"npc"))) +
+      geom_text(data=df3[[key]], aes(x=df3[[key]]$CAP1,# + 0.4*sign(df3[[key]]$CAP1)*df3[[key]]$CAP1, 
+                                     y=df3[[key]]$CAP2,# + 0.4*sign(df3[[key]]$CAP2)*df3[[key]]$CAP2, 
+                                     angle = df3[[key]]$quadrant), 
+                label=rownames(df3[[key]]), size=3.2, fontface="bold", color = "white", 
+                hjust=0.5*(1-sign(df3[[key]]$CAP1)),
+                vjust=0.5*(1-sign(df3[[key]]$CAP2))) +
+      geom_text(data=df3[[key]], aes(x=df3[[key]]$CAP1,# + 0.4*sign(df3[[key]]$CAP1)*df3[[key]]$CAP1, 
+                                     y=df3[[key]]$CAP2,# + 0.4*sign(df3[[key]]$CAP2)*df3[[key]]$CAP2, 
+                                     angle = df3[[key]]$quadrant), 
+                label=rownames(df3[[key]]), size=3, fontface="bold", color = "blue", 
+                hjust=0.5*(1-sign(df3[[key]]$CAP1)),
+                vjust=0.5*(1-sign(df3[[key]]$CAP2)))
+       
     
   }
 )
@@ -1171,69 +1197,7 @@ dev.off()
 
 
 
-# export multipanel rda figure
-plotList <- lapply(
-  1:length(seasons),
-  function(key) {
-    rdadat[[key]]$Cover <- as.factor(rdadat[[key]]$Cover)
-    #rdadat[[key]]$Cover <- factor(rdadat[[key]]$Cover, levels(rdadat[[key]]$Cover)[c(2,4,1,5,3)])
-    rdadat[[key]]$Cropping.system <- as.factor(rdadat[[key]]$Cropping.system)
-    #rdadat[[key]]$Cropping.system <- factor(rdadat[[key]]$Cropping.system, levels(rdadat[[key]]$Cropping.system)[c(1,4,3,2)])
-    # Extract species (fungerial families) scores
-    species_scores <- scores(myrdaall[[key]], display = "species")
-    
-    # Convert to data frame for ggplot
-    df_fung0 <- as.data.frame(species_scores[, 1:2])  # Only take first 2 axes (RDA1, RDA2)
-    
-    # Optionally scale for visual clarity (e.g., shrink arrows to reduce clutter)
-    scaling_factor <- 50
-    df_fung0$CAP1 <- df_fung0[, 1] * scaling_factor
-    df_fung0$CAP2 <- df_fung0[, 2] * scaling_factor
-    df_fung0$label <- taxabund$Class
-    df_fung[[key]] <- df_fung0 %>%
-      group_by(label) %>%
-      summarise(CAP1 = mean(CAP1, na.rm = TRUE),
-                CAP2 = mean(CAP2, na.rm = TRUE)) %>% 
-      mutate(sum = abs(CAP1)+(CAP2)) %>% 
-      arrange(desc(sum)) %>% 
-      top_n(5)
-    
-    # Need to assign the plot to a variable because 
-    # you want to generate the plot AND save to file 
-    x <- ggplot(rdadat[[key]], aes(CAP1, CAP2)) +
-      geom_point(aes(fill=Cropping.system, shape=Cover), size=2) +
-      theme_bw() +
-      scale_fill_manual(values = cropsyscols) +
-      scale_shape_manual(values = c(21:25)) +
-      guides(fill=guide_legend(title="Cropping system", override.aes=list(shape=21, size=3)),
-             shape=guide_legend(title="Cover", override.aes = list(size=3))) +
-      labs(x=paste0("RDA1 (", var1[key], "%)"), y=paste0("RDA2 (", var2[key], "%)"), title=seasons[key]) + # amend according to variance explained
-      theme(legend.text = element_text(size = 14), 
-            legend.title = element_text(size = 16)) +
-      lims(x = c(-2,2), y = c(-2,3)) +
-      # Fungal family vectors
-      geom_segment(data = df_fung[[key]], aes(x = 0, xend = CAP1, y = 0, yend = CAP2), 
-                   color = "magenta3", size = 0.75,
-                   arrow = arrow(length = unit(0.02, "npc"))) +
-      geom_label(data = df_fung[[key]], aes(x = CAP1, y = CAP2, label = label), 
-                 hjust = 0.5 * (1 - sign(df_fung[[key]]$CAP1)),
-                 vjust = 0.5 * (1 - sign(df_fung[[key]]$CAP2)),
-                 color = "magenta3", label.size = NA, fill = alpha(c("white"),0.25), size = 2) +
-      geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="white", size=1.25,arrow=arrow(length=unit(0.02,"npc"))) +
-      geom_segment(data=df3[[key]], aes(x=0, xend=CAP1, y=0, yend=CAP2), color="black", size=1,arrow=arrow(length=unit(0.02,"npc"))) +
-      geom_label(data=df3[[key]], aes(x=df3[[key]]$CAP1,y=df3[[key]]$CAP2,label=rownames(df3[[key]])), 
-                 hjust=0.5*(1-sign(df3[[key]]$CAP1)),vjust=0.5*(1-sign(df3[[key]]$CAP2)), fill = "white", size=2) 
-    
-   }
-)
-
-allplots <- ggarrange(plotlist=plotList, 
-                      labels = "AUTO", common.legend = T, legend = "right",
-                      ncol = 3, nrow=5)
-
-png(paste0("Figures/microbial-diversity/rda/",name,"_dbrda-all1_across-timepoints_c.png"),  height=4000, width=3500, res = 300)
-allplots 
-dev.off()
+ 
 
 
 

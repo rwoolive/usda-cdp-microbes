@@ -92,6 +92,7 @@ ssnyrcols <- c("white",
                RColorBrewer::brewer.pal(n = 4, name = "Reds")[2:4], 
                RColorBrewer::brewer.pal(n = 4, name = "Blues")[2:4])
 yrcols <- c("white", "purple", "aquamarine3", "brown2", "blue")
+ssncols <- c("purple", "aquamarine3", "blue")
 
 
 
@@ -119,7 +120,6 @@ dat_plot <- divdat[which(is.na(divdat$richness)==FALSE),]
 
 
 
-
 ##### Community visualization: NMDS of all data
 
 m<-metaMDS(divmat_pa, display="sites", wascores="TRUE", maxit=5000) 
@@ -136,35 +136,47 @@ with(divdat, levels(Season.Year))
 scl <-2
 #View(s$sites)
 
+xlims <- c(-2.5,3)
+ylims <- c(-2,1.5)
+
 # by year
 png(paste0("Figures/microbial-diversity/nmds/all-data/",region,"_yr.png"), width=800, height=850, res = 150)
-plot(s$sites, type="n", xlim=c(-3,2.8), xlab=bquote(NMDS1~"("*.(round(c1*100,0))*"%)"), ylab=bquote(NMDS2~"("*.(round(c2*100,0))*"%)"), las=1) #  , ylim=c(-1.1,1.5)
+plot(s$sites, type="n", xlim=xlims, ylim=ylims,  xlab=bquote(NMDS1~"("*.(round(c1*100,0))*"%)"), ylab=bquote(NMDS2~"("*.(round(c2*100,0))*"%)"), las=1) #  , ylim=c(-1.1,1.5)
 with(dat_plot, points(s$sites,   pch =21, bg = alpha(yrcols[Year], 0.9))) # [-which(divdat$new.name %in% rem),]
-with(dat_plot, legend(x="topleft", legend=levels(Year), bty="n", col="black", pch=21, pt.cex=1.5, pt.bg=alpha(yrcols,0.8))) # [-which(divdat$new.name %in% rem),]
+#with(dat_plot, legend(x="topleft", legend=levels(Year), bty="n", col="black", pch=21, pt.cex=1.5, pt.bg=alpha(yrcols,0.8))) # [-which(divdat$new.name %in% rem),]
 ordiellipse(m, group=dat_plot$Year, col = alpha(yrcols, 0.9), label=F, draw="polygon", border = "black" ) # [-which(divdat$new.name %in% rem)]
 dev.off()
 
 # by season/year
 png(paste0("Figures/microbial-diversity/nmds/all-data/",region,"_ssnyr.png"), width=1000, height=1000, res = 150)
-plot(s$sites, type="n", xlim=c(-2.5,2.8), xlab=bquote(NMDS1~"("*.(round(c1*100,0))*"%)"), ylab=bquote(NMDS2~"("*.(round(c2*100,0))*"%)"), las=1) #  , ylim=c(-1.1,1.5)
+plot(s$sites, type="n", xlim=xlims, ylim=ylims, xlab=bquote(NMDS1~"("*.(round(c1*100,0))*"%)"), ylab=bquote(NMDS2~"("*.(round(c2*100,0))*"%)"), las=1) #  , ylim=c(-1.1,1.5)
 with(dat_plot, points(s$sites,  scaling =scl, pch =21, bg = alpha(ssnyrcols[Season.Year], 0.9))) # [-which(divdat$new.name %in% rem),]
 #with(dat_plot, legend("topleft", legend=levels(Season.Year), bty="n", col="black", pch=21, pt.cex=1.5, pt.bg=alpha(ssnyrcols,0.8))) # [-which(divdat$new.name %in% rem),]
 ordiellipse(m, group=dat_plot$Season.Year, col = alpha(ssnyrcols, 0.9), label=F, draw="polygon", border = "black"  ) # [-which(divdat$new.name %in% rem)]
 dev.off()
 
+# by season
+png(paste0("Figures/microbial-diversity/nmds/all-data/",region,"_ssn.png"), width=1000, height=1000, res = 150)
+plot(s$sites, type="n", xlim=xlims, ylim=ylims, xlab=bquote(NMDS1~"("*.(round(c1*100,0))*"%)"), ylab=bquote(NMDS2~"("*.(round(c2*100,0))*"%)"), las=1) #  , ylim=c(-1.1,1.5)
+with(dat_plot, points(s$sites,  scaling =scl, pch = 21, bg = alpha(ssncols[Season], 0.9))) # [-which(divdat$new.name %in% rem),]
+#with(dat_plot, legend("topleft", legend=levels(Season), bty="n", col="black", pch=21, pt.cex=1.5, pt.bg=alpha(ssncols,0.8))) # [-which(divdat$new.name %in% rem),]
+#with(dat_plot, legend("bottomleft", legend=levels(Cropping.system), bty="n", col="black", pch=c(21:24), pt.cex=1.5, pt.bg="white")) # [-which(divdat$new.name %in% rem),]
+ordiellipse(m, group=dat_plot$Season, col = alpha(ssncols, 0.9), label=F, draw="polygon", border = "black"  ) # [-which(divdat$new.name %in% rem)]
+dev.off()
+
 # by cover
 png(paste0("Figures/microbial-diversity/nmds/all-data/",region,"_cover.png"), width=600, height=650, res = 150)
-plot(s$sites, type="n", xlim=c(-3,2.8), xlab=bquote(NMDS1~"("*.(round(c1*100,0))*"%)"), ylab=bquote(NMDS2~"("*.(round(c2*100,0))*"%)"), las=1)
+plot(s$sites, type="n", xlim=xlims, ylim=ylims, xlab=bquote(NMDS1~"("*.(round(c1*100,0))*"%)"), ylab=bquote(NMDS2~"("*.(round(c2*100,0))*"%)"), las=1)
 with(dat_plot, points(s$sites,  scaling =scl, pch =21, bg = alpha(covercols[Cover], 0.9)))
-with(dat_plot, legend("bottomleft", legend=levels(Cover), bty="n", col="black", pch=21, pt.cex=1.5, pt.bg=alpha(covercols,0.8)))
+#with(dat_plot, legend("bottomleft", legend=levels(Cover), bty="n", col="black", pch=21, pt.cex=1.5, pt.bg=alpha(covercols,0.8)))
 ordiellipse(m, group=dat_plot$Cover, col = alpha(covercols, 0.9), label=F, draw="polygon", border = "black"  )
 dev.off()
 
 # by cropping system
 png(paste0("Figures/microbial-diversity/nmds/all-data/",region,"_cropsys.png"), width=700, height=750, res = 150)
-plot(s$sites, type="n", xlim=c(-3,2.8),xlab=bquote(NMDS1~"("*.(round(c1*100,0))*"%)"), ylab=bquote(NMDS2~"("*.(round(c2*100,0))*"%)"), las=1)
+plot(s$sites, type="n", xlim=xlims, ylim=ylims, xlab=bquote(NMDS1~"("*.(round(c1*100,0))*"%)"), ylab=bquote(NMDS2~"("*.(round(c2*100,0))*"%)"), las=1)
 with(dat_plot, points(s$sites,  scaling =scl, pch =21, bg = alpha(cropsyscols[Cropping.system], 0.9)))
-with(dat_plot, legend("bottomleft", legend=levels(Cropping.system), bty="n", col="black", pch=21, pt.cex=1.5, pt.bg=alpha(cropsyscols,0.8)))
+#with(dat_plot, legend("bottomleft", legend=levels(Cropping.system), bty="n", col="black", pch=21, pt.cex=1.5, pt.bg=alpha(cropsyscols,0.8)))
 ordiellipse(m, group=dat_plot$Cropping.system, col = alpha(cropsyscols, 0.9), label=F, draw="polygon", border = "black"  )
 dev.off()
 

@@ -5,8 +5,8 @@
 
 
 library(vegan)
-install.packages("devtools")
-devtools::install_github("jfq3/QsRutils", build_vignettes = TRUE)
+#install.packages("devtools")
+#devtools::install_github("jfq3/QsRutils", build_vignettes = TRUE)
 library(QsRutils)
 library(ecodist)
 library(ape)
@@ -113,6 +113,165 @@ time_l <- length(times)
 
 dat2 <- soildat
 
+
+################################################
+
+# dataframe for model output
+resp <- data.frame(resp = rep(responses),
+                   normality_pvalue = rep(NA, resp_l),
+                   normality_W = rep(NA, resp_l),
+                   cover = rep(NA, resp_l),
+                   cropsys = rep(NA, resp_l),
+                   time = rep(NA, resp_l),
+                   cover.cropsys = rep(NA, resp_l),
+                   cover.time = rep(NA, resp_l),
+                   cropsys.time = rep(NA, resp_l),
+                   cover.cropsys.time = rep(NA, resp_l),
+                   rsq = rep(NA, resp_l),
+                  transformed = rep(NA, resp_l),
+                  cover.p = rep(NA, resp_l),
+                  cropsys.p = rep(NA, resp_l),
+                  time.p = rep(NA, resp_l),
+                  cover.cropsys.p = rep(NA, resp_l),
+                  cover.time.p = rep(NA, resp_l),
+                  cropsys.time.p = rep(NA, resp_l),
+                  cover.cropsys.time.p = rep(NA, resp_l))
+resp_list <- resp
+
+
+# overall model
+for (i in 1:resp_l) { 
+  print(paste("Starting ", resp$resp[i], " (", i, " of ", resp_l,")"))
+  response_var <- resp$resp[i]  # Current response variable
+  
+  fit <- lme(
+    fixed = as.formula(paste("(", response_var, ") ~ Cover * Cropping.system * season.year")),
+    random = ~ 1 | Rep,
+    #weights = varIdent(form = ~ 1 | season.year),
+    data = dat2,
+    na.action = na.omit)
+  
+  # check for normality
+  resid <- residuals(fit)
+  resp_list$normality_pvalue[i] <- shapiro.test(resid)$p.value
+  resp_list$normality_W[i] <- shapiro.test(resid)$statistic
+  resp_list$transformed[i] <- "no"
+  
+  if(resp_list$normality_pvalue[i] < 0.05){
+    # Fit the model
+    fit <- lme(
+      fixed = as.formula(paste("log(", response_var, "+1) ~ Cover * Cropping.system * season.year")),
+      random = ~ 1 | Rep,
+      #weights = varIdent(form = ~ 1 | season.year),
+      data = dat2,
+      na.action = na.omit)
+    # check for normality
+    resid <- residuals(fit)
+    resp_list$normality_pvalue[i] <- shapiro.test(resid)$p.value
+    resp_list$normality_W[i] <- shapiro.test(resid)$statistic
+    resp_list$transformed[i] <- "yes"
+  }
+  
+  # export model stats
+  mod.out <- as.data.frame(anova(fit, type="marginal")) 
+  mod.out2 <- mod.out %>% mutate_if(is.numeric, round, digits=3)
+  resp_list[i,c(4:10)] <- paste0(round(mod.out2$`F-value`,2))[2:8]
+  resp_list$rsq[i] <- paste0(round(r.squaredGLMM(fit)[1],2), ", ", round(r.squaredGLMM(fit)[2],2)) # marginal, conditional
+  
+  # replace p's with asterisks to denote significance
+  ps <- mod.out2$`p-value`[2:8]
+  for (k in 1:7){
+    if(ps[k] >= 0.05){resp_list[i, k+12] <- ""}
+    else if(ps[k] >= 0.01){resp_list[i, k+12] <- "*"}
+    else if(ps[k] >= 0.001){resp_list[i, k+12] <- "**"}
+    else {resp_list[i, k+12] <- "***"}
+  }
+  
+  ### tukey: Cropping.system * Timepoint
+  test1 <- emmeans(fit, ~ Cropping.system*season.year)
+  testlet <- cld(test1, type = "response", Letters = "ABCDEFGH", reversed = TRUE)
+  testlet <- testlet %>% dplyr::mutate_each_(funs(factor(.)),c("Cropping.system","season.year"))
+  testlet$Cropping.system <- factor(testlet$Cropping.system, levels(testlet$Cropping.system)[c(1,4,3,2)])
+  #testlet$Cover <- factor(testlet$Cover, levels(testlet$Cover)[c(2,4,1,5,3)])
+  testlet <- testlet[order(testlet$season.year, testlet$Cropping.system),]
+  testlet$.group <- gsub(" ", "", testlet$.group)
+  if(length(unique(testlet$.group))==1) {testlet$.group <- rep(" ", length(testlet$.group))}
+  write.csv(testlet, paste0("Model-output/anova_", region, "/cropsys by season.year/",response_var, ".csv"))
+  
+  ### tukey: Cover * Timepoint
+  test1 <- emmeans(fit, ~ Cover*season.year)
+  testlet <- cld(test1, type = "response", Letters = "ABCDEFGH", reversed = TRUE)
+  testlet <- testlet %>% dplyr::mutate_each_(funs(factor(.)),c("Cover","season.year"))
+  #testlet$season.year <- factor(testlet$season.year, levels(testlet$season.year)[c(1,4,3,2)])
+  testlet$Cover <- factor(testlet$Cover, levels(testlet$Cover)[c(2,4,1,5,3)])
+  testlet <- testlet[order(testlet$season.year, testlet$Cover),]
+  testlet$.group <- gsub(" ", "", testlet$.group)
+  if(length(unique(testlet$.group))==1) {testlet$.group <- rep(" ", length(testlet$.group))}
+  write.csv(testlet, paste0("Model-output/anova_", region, "/cover by season.year/",response_var, ".csv"))
+  
+  ### tukey: Cover * Cropping system
+  test1 <- emmeans(fit, ~ Cover*Cropping.system)
+  testlet <- cld(test1, type = "response", Letters = "ABCDEFGH", reversed = TRUE)
+  testlet <- testlet %>% dplyr::mutate_each_(funs(factor(.)),c("Cover","Cropping.system"))
+  testlet$Cropping.system <- factor(testlet$Cropping.system, levels(testlet$Cropping.system)[c(1,4,3,2)])
+  testlet$Cover <- factor(testlet$Cover, levels(testlet$Cover)[c(2,4,1,5,3)])
+  testlet <- testlet[order(testlet$Cropping.system, testlet$Cover),]
+  testlet$.group <- gsub(" ", "", testlet$.group)
+  if(length(unique(testlet$.group))==1) {testlet$.group <- rep(" ", length(testlet$.group))}
+  write.csv(testlet, paste0("Model-output/anova_", region, "/cover by cropsys/",response_var, ".csv"))
+  
+  ### tukey: Timepoint 
+  test1 <- emmeans(fit, ~ season.year)
+  testlet <- cld(test1, type = "response", Letters = "ABCDEFG", reversed = TRUE)
+  testlet <- testlet %>% dplyr::mutate_each_(funs(factor(.)),c("season.year"))
+  #testlet$season.year <- factor(testlet$season.year, levels(testlet$season.year)[c(2,4,1,5,3)])
+  testlet <- testlet[order(testlet$season.year),]
+  testlet$.group <- gsub(" ", "", testlet$.group)
+  if(length(unique(testlet$.group))==1) {testlet$.group <- rep(" ", length(testlet$.group))}
+  write.csv(testlet, paste0("Model-output/anova_", region, "/season.year/",response_var, ".csv"))
+  
+  ### tukey: Cropping.system 
+  test1 <- emmeans(fit, ~ Cropping.system)
+  testlet <- cld(test1, type = "response", Letters = "ABCDE", reversed = TRUE)
+  testlet <- testlet %>% dplyr::mutate_each_(funs(factor(.)),c("Cropping.system"))
+  testlet$Cropping.system <- factor(testlet$Cropping.system, levels(testlet$Cropping.system)[c(1,4,3,2)])
+  testlet <- testlet[order(testlet$Cropping.system),]
+  testlet$.group <- gsub(" ", "", testlet$.group)
+  if(length(unique(testlet$.group))==1) {testlet$.group <- rep(" ", length(testlet$.group))}
+  write.csv(testlet, paste0("Model-output/anova_", region, "/cropsys/",response_var,".csv"))
+  
+  ### tukey: Cover 
+  test1 <- emmeans(fit, ~ Cover)
+  testlet <- cld(test1, type = "response", Letters = "ABCDE", reversed = TRUE)
+  testlet <- testlet %>% dplyr::mutate_each_(funs(factor(.)),c("Cover"))
+  testlet$Cover <- factor(testlet$Cover, levels(testlet$Cover)[c(2,4,1,5,3)])
+  testlet <- testlet[order(testlet$Cover),]
+  testlet$.group <- gsub(" ", "", testlet$.group)
+  if(length(unique(testlet$.group))==1) {testlet$.group <- rep(" ", length(testlet$.group))}
+  write.csv(testlet, paste0("Model-output/anova_", region, "/cover/",response_var, ".csv"))
+}
+
+View(resp_list) # check
+resp <- resp_list[order(resp_list$resp),]
+write.csv(resp, paste0("Model-output/anova_", region, "/all-anova-overall.csv"))
+
+
+
+
+
+
+
+
+################## model for each timepoint
+responses <- c("fun_richness", "fun_shannon.div", "fun_simpson.div", "fun_invsimpson.div", "fun_evenness", "amf_relabund", "plantpath_relabund", "sap_relabund")
+resp_l <- length(responses)
+
+times <- levels(soildat$season.year)
+time_l <- length(times)
+
+
+dat2 <- soildat
+
 # # Our model for each response variable will look like this:
 # # with time as the repeated measure
 # fit <- lme(resp ~ Cover * Cropping.system, # Fixed effects
@@ -132,12 +291,12 @@ resp <- data.frame(resp = rep(responses),
                    normality_W = rep(NA, resp_l),
                    cover = rep(NA, resp_l),
                    cropsys = rep(NA, resp_l),
-                  cover.cropsys = rep(NA, resp_l),
+                   cover.cropsys = rep(NA, resp_l),
                    rsq = rep(NA, resp_l),
-                  transformed = rep(NA, resp_l),
-                  cover_sig = rep(NA, resp_l),
-                  cropsys_sig = rep(NA, resp_l),
-                  cover.cropsys_sig = rep(NA, resp_l))
+                   transformed = rep(NA, resp_l),
+                   cover_sig = rep(NA, resp_l),
+                   cropsys_sig = rep(NA, resp_l),
+                   cover.cropsys_sig = rep(NA, resp_l))
 resp_list <- list(NA)
 for(t in 1:time_l){
   new_list <- list(name=resp)
@@ -145,11 +304,6 @@ for(t in 1:time_l){
 }
 resp_list <- resp_list[-1]
 names(resp_list) <- times
-
-
-
-
-# model
 # Loop through responses and fit models
 for (i in 1:resp_l) { 
   response_var <- resp$resp[i]  # Current response variable

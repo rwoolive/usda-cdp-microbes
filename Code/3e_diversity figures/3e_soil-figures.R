@@ -95,11 +95,11 @@ mains <- c(expression(paste("Gravimetric moisture content (g g"^"-1",")")),
            expression(paste("N-acetyl-", beta, "-glucosaminidase activity (nmol g"^-1," h"^-1,")")),
            expression(paste("Phosphatase activity (nmol g"^-1," h"^-1,")")))
 regions <- rep("16S", length(resps))
-heights <- c(rep(2.5, 9), 3)
+heights <- c(rep(2.5, 9), 2.5)
 nox <- rep("", length(seasons))
 xaxes <- list(nox, nox, nox, nox,
-              nox, nox, nox, nox, nox, seasons)
-widths <- c(8.5, rep(7,9))
+              nox, nox, nox, nox, nox, nox)
+widths <- c(8.5, rep(8.5,9))
 legs <- c( T, rep(F, 9))
 
 
@@ -126,7 +126,7 @@ dat_max <- dat_sub %>%
 # plot
 p <- ggplot(dat_sub, aes(x=as.numeric(Season.Year), y=Response, color=Cover)) +
   geom_vline(xintercept = c(2,5,8,11), color="gray77", linetype="dotted") +
-  annotate(geom = "text", x = sigs, y = dat_max$max[sigs]+0.25*(max(dat_max$max)-min(dat_max$max)), label = df$cover_sig[sigs], size=5) +
+  #annotate(geom = "text", x = sigs, y = dat_max$max[sigs]+0.25*(max(dat_max$max)-min(dat_max$max)), label = df$cover_sig[sigs], size=5) +
   geom_point() +
   geom_line() + 
   scale_color_manual(values=covercols) +
@@ -134,14 +134,14 @@ p <- ggplot(dat_sub, aes(x=as.numeric(Season.Year), y=Response, color=Cover)) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), axis.title.y = element_text(size=8)) +
   scale_x_continuous(breaks=c(1:13), labels = xaxes[[i]]) 
-if(legs[i]==F) {q <- p + guides(color=F)
-            # export plot
-            ggpubr::ggexport(q, height=heights[i], width=widths[i], 
-                             filename = paste0("Figures/microbial-diversity/diversity/Cover ", lets[i], ") ", resps[i], ".pdf"))
-} 
-else(# export plot
+# if(legs[i]==F) {q <- p + guides(color=F)
+#             # export plot
+#             ggpubr::ggexport(q, height=heights[i], width=widths[i], 
+#                              filename = paste0("Figures/microbial-diversity/diversity/Cover ", lets[i], ") ", resps[i], ".pdf"))
+# } 
+# else(# export plot
   ggpubr::ggexport(p, height=heights[i], width=widths[i], 
-                   filename = paste0("Figures/microbial-diversity/diversity/Cover ", lets[i], ") ", resps[i], ".pdf")))
+                   filename = paste0("Figures/microbial-diversity/diversity/Cover ", lets[i], ") ", resps[i], ".pdf"))#)
 }
 
 
@@ -170,7 +170,7 @@ for(i in 1:length(resps)){
   # plot
   p <- ggplot(dat_sub, aes(x=as.numeric(Season.Year), y=Response, color=Cropping.system)) +
     geom_vline(xintercept = c(2,5,8,11), color="gray77", linetype="dotted") +
-    annotate(geom = "text", x = sigs, y = dat_max$max[sigs]+0.25*(max(dat_max$max)-min(dat_max$max)), label = df$cropsys_sig[sigs], size=5) +
+    #annotate(geom = "text", x = sigs, y = dat_max$max[sigs]+0.25*(max(dat_max$max)-min(dat_max$max)), label = df$cropsys_sig[sigs], size=5) +
     geom_point() +
     geom_line() + 
     scale_color_manual(values=cropsyscols) +
@@ -178,16 +178,15 @@ for(i in 1:length(resps)){
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), axis.title.y = element_text(size=8)) +
     scale_x_continuous(breaks=c(1:13), labels = xaxes[[i]]) 
-  if(legs[i]==F) {q <- p + guides(color=F)
-  # export plot
-  ggpubr::ggexport(q, height=heights[i], width=widths[i], 
-                   filename = paste0("Figures/microbial-diversity/diversity/Cropping system ", lets[i], ") ", resps[i], ".pdf"))
-  } 
-  else(# export plot
+  # if(legs[i]==F) {q <- p + guides(color=F)
+  # # export plot
+  # ggpubr::ggexport(q, height=heights[i], width=widths[i], 
+  #                  filename = paste0("Figures/microbial-diversity/diversity/Cropping system ", lets[i], ") ", resps[i], ".pdf"))
+  # } 
+  # else(# export plot
     ggpubr::ggexport(p, height=heights[i], width=widths[i], 
-                     filename = paste0("Figures/microbial-diversity/diversity/Cropping system ", lets[i], ") ", resps[i], ".pdf")))
+                     filename = paste0("Figures/microbial-diversity/diversity/Cropping system ", lets[i], ") ", resps[i], ".pdf"))#)
 }
-
 
 
 

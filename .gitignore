@@ -61,3 +61,7 @@ Raw-data
 
 # Polme et al. 2020 (Fungal Diversity)
 Raw-data/Fungal-trait-database
+
+# Processed diversity data
+Processed-data/sequences/soil_16S-diversity.csv
+Processed-data/sequences/soil_ITS-diversity.csv

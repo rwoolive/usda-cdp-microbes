@@ -117,6 +117,209 @@ ggpubr::ggexport(p_overall + labs(tag = "B) Fungi"), width = 4000, height = 2500
                  filename = paste0("Figures/microbial-diversity/lefse/", region, "_overall_cover.png"))
 
 
+### Corn-Corn-Corn LEfSe 
+'%notin%' <- Negate('%in%')
+# subset to timepoint
+divexp_phy_small <- phyloseq::subset_samples(
+  divexp_phy,
+  Time %notin% c("Fall 2020") & Cropping.system %in% "Corn-Corn-Corn"
+)
+# lefse analysis
+mm_lefse_0 <- run_lefse(divexp_phy_small, group = "Cover", wilcoxon_cutoff = w_cutoff, kw_cutoff = kw_cutoff, lda_cutoff = l_cutoff)
+
+# # which treatments are represented?
+# gps <- unique(mm_lefse_0@marker_table$enrich_group)
+# 
+# # plot with cladogram
+# p_overall <- plot_cladogram(mm_lefse_0, color = covercols[gps], 
+#                             alpha = 0.5, clade_label_level = 5) +
+#   theme(plot.margin = margin(0, 0, 0, 0)) +   guides(fill = "none")  
+# 
+# ggpubr::ggexport(p_overall + labs(tag = "B) Fungi"), width = 4000, height = 2500, res = reso, 
+#                  filename = paste0("Figures/microbial-diversity/lefse/", region, "_Corn-Corn-Corn_cover.png"))
+
+### Corn-Soybean-Corn LEfSe 
+'%notin%' <- Negate('%in%')
+# subset to timepoint
+divexp_phy_small <- phyloseq::subset_samples(
+  divexp_phy,
+  Time %notin% c("Fall 2020") & Cropping.system %in% "Corn-Soybean-Corn"
+)
+# lefse analysis
+mm_lefse_0 <- run_lefse(divexp_phy_small, group = "Cover", wilcoxon_cutoff = w_cutoff, kw_cutoff = kw_cutoff, lda_cutoff = l_cutoff)
+
+# # which treatments are represented?
+# gps <- unique(mm_lefse_0@marker_table$enrich_group)
+# 
+# # plot with cladogram
+# p_overall <- plot_cladogram(mm_lefse_0, color = covercols[gps], 
+#                             alpha = 0.5, clade_label_level = 5) +
+#   theme(plot.margin = margin(0, 0, 0, 0)) +   guides(fill = "none")  
+# 
+# ggpubr::ggexport(p_overall + labs(tag = "B) Fungi"), width = 4000, height = 2500, res = reso, 
+#                  filename = paste0("Figures/microbial-diversity/lefse/", region, "_Corn-Soybean-Corn_cover.png"))
+
+### Soybean-Soybean-Soybean LEfSe 
+'%notin%' <- Negate('%in%')
+# subset to timepoint
+divexp_phy_small <- phyloseq::subset_samples(
+  divexp_phy,
+  Time %notin% c("Fall 2020") & Cropping.system %in% "Soybean-Soybean-Soybean"
+)
+# lefse analysis
+mm_lefse_0 <- run_lefse(divexp_phy_small, group = "Cover", wilcoxon_cutoff = w_cutoff, kw_cutoff = kw_cutoff, lda_cutoff = l_cutoff)
+
+# # which treatments are represented?
+# gps <- unique(mm_lefse_0@marker_table$enrich_group)
+# 
+# # plot with cladogram
+# p_overall <- plot_cladogram(mm_lefse_0, color = covercols[gps], 
+#                             alpha = 0.5, clade_label_level = 5) +
+#   theme(plot.margin = margin(0, 0, 0, 0)) +   guides(fill = "none")  
+# 
+# ggpubr::ggexport(p_overall + labs(tag = "B) Fungi"), width = 4000, height = 2500, res = reso, 
+#                  filename = paste0("Figures/microbial-diversity/lefse/", region, "_Soybean-Soybean-Soybean_cover.png"))
+
+### Corn-Cotton-Soybean LEfSe 
+'%notin%' <- Negate('%in%')
+# subset to timepoint
+divexp_phy_small <- phyloseq::subset_samples(
+  divexp_phy,
+  Time %notin% c("Fall 2020") & Cropping.system %in% "Corn-Cotton-Soybean"
+)
+# lefse analysis
+mm_lefse_0 <- run_lefse(divexp_phy_small, group = "Cover", wilcoxon_cutoff = w_cutoff, kw_cutoff = kw_cutoff, lda_cutoff = l_cutoff)
+
+# # which treatments are represented?
+# gps <- unique(mm_lefse_0@marker_table$enrich_group)
+# 
+# # plot with cladogram
+# p_overall <- plot_cladogram(mm_lefse_0, color = covercols[gps], 
+#                             alpha = 0.5, clade_label_level = 5) +
+#   theme(plot.margin = margin(0, 0, 0, 0)) +   guides(fill = "none")  
+# 
+# ggpubr::ggexport(p_overall + labs(tag = "B) Fungi"), width = 4000, height = 2500, res = reso, 
+#                  filename = paste0("Figures/microbial-diversity/lefse/", region, "_Corn-Cotton-Soybean_cover.png"))
+
+### No cover LEfSe 
+'%notin%' <- Negate('%in%')
+# subset to timepoint
+divexp_phy_small <- phyloseq::subset_samples(
+  divexp_phy,
+  Time %notin% c("Fall 2020", "Spring 2021") & Cover %in% "No cover"
+)
+# lefse analysis
+mm_lefse_0 <- run_lefse(divexp_phy_small, group = "Cropping.system", wilcoxon_cutoff = w_cutoff, kw_cutoff = kw_cutoff, lda_cutoff = l_cutoff)
+
+# which treatments are represented?
+gps <- unique(mm_lefse_0@marker_table$enrich_group)
+
+# plot with cladogram
+p_overall <- plot_cladogram(mm_lefse_0, color = cropsyscols[gps],
+                            alpha = 0.5, clade_label_level = 5) +
+  theme(plot.margin = margin(0, 0, 0, 0)) +   guides(fill = "none")
+
+ggpubr::ggexport(p_overall + labs(tag = "Fungi"), width = 4000, height = 2500, res = reso,
+                 filename = paste0("Figures/microbial-diversity/lefse/", region, "_No cover_cropsys.png"))
+
+### Wheat LEfSe 
+'%notin%' <- Negate('%in%')
+# subset to timepoint
+divexp_phy_small <- phyloseq::subset_samples(
+  divexp_phy,
+  Time %notin% c("Fall 2020", "Spring 2021") & Cover %in% "Wheat"
+)
+# lefse analysis
+mm_lefse_0 <- run_lefse(divexp_phy_small, group = "Cropping.system", wilcoxon_cutoff = w_cutoff, kw_cutoff = kw_cutoff, lda_cutoff = l_cutoff)
+
+# which treatments are represented?
+gps <- unique(mm_lefse_0@marker_table$enrich_group)
+
+# plot with cladogram
+p_overall <- plot_cladogram(mm_lefse_0, color = cropsyscols[gps],
+                            alpha = 0.5, clade_label_level = 5) +
+  theme(plot.margin = margin(0, 0, 0, 0)) +   guides(fill = "none")
+
+ggpubr::ggexport(p_overall + labs(tag = "Fungi"), width = 4000, height = 2500, res = reso,
+                 filename = paste0("Figures/microbial-diversity/lefse/", region, "_Wheat_cropsys.png"))
+
+
+### Clover LEfSe 
+'%notin%' <- Negate('%in%')
+# subset to timepoint
+divexp_phy_small <- phyloseq::subset_samples(
+  divexp_phy,
+  Time %notin% c("Fall 2020", "Spring 2021") & Cover %in% "Clover"
+)
+# lefse analysis
+mm_lefse_0 <- run_lefse(divexp_phy_small, group = "Cropping.system", wilcoxon_cutoff = w_cutoff, kw_cutoff = kw_cutoff, lda_cutoff = l_cutoff)
+
+# which treatments are represented?
+gps <- unique(mm_lefse_0@marker_table$enrich_group)
+
+# plot with cladogram
+p_overall <- plot_cladogram(mm_lefse_0, color = cropsyscols[gps],
+                            alpha = 0.5, clade_label_level = 5) +
+  theme(plot.margin = margin(0, 0, 0, 0)) +   guides(fill = "none")
+
+ggpubr::ggexport(p_overall + labs(tag = "Fungi"), width = 4000, height = 2500, res = reso,
+                 filename = paste0("Figures/microbial-diversity/lefse/", region, "_Clover_cropsys.png"))
+
+
+
+
+### Wheat-clover mix LEfSe 
+'%notin%' <- Negate('%in%')
+# subset to timepoint
+divexp_phy_small <- phyloseq::subset_samples(
+  divexp_phy,
+  Time %notin% c("Fall 2020", "Spring 2021") & Cover %in% "Wheat-Clover"
+)
+# lefse analysis
+mm_lefse_0 <- run_lefse(divexp_phy_small, group = "Cropping.system", wilcoxon_cutoff = w_cutoff, kw_cutoff = kw_cutoff, lda_cutoff = l_cutoff)
+
+# which treatments are represented?
+gps <- unique(mm_lefse_0@marker_table$enrich_group)
+
+# plot with cladogram
+p_overall <- plot_cladogram(mm_lefse_0, color = cropsyscols[gps],
+                            alpha = 0.5, clade_label_level = 5) +
+  theme(plot.margin = margin(0, 0, 0, 0)) +   guides(fill = "none")
+
+ggpubr::ggexport(p_overall + labs(tag = "Fungi"), width = 4000, height = 2500, res = reso,
+                 filename = paste0("Figures/microbial-diversity/lefse/", region, "_Wheat-Clover_cropsys.png"))
+
+
+
+
+### SHM LEfSe 
+'%notin%' <- Negate('%in%')
+# subset to timepoint
+divexp_phy_small <- phyloseq::subset_samples(
+  divexp_phy,
+  Time %notin% c("Fall 2020", "Spring 2021") & Cover %in% "SHM"
+)
+# lefse analysis
+mm_lefse_0 <- run_lefse(divexp_phy_small, group = "Cropping.system", wilcoxon_cutoff = w_cutoff, kw_cutoff = kw_cutoff, lda_cutoff = l_cutoff)
+
+# which treatments are represented?
+gps <- unique(mm_lefse_0@marker_table$enrich_group)
+
+# plot with cladogram
+p_overall <- plot_cladogram(mm_lefse_0, color = cropsyscols[gps],
+                            alpha = 0.5, clade_label_level = 5) +
+  theme(plot.margin = margin(0, 0, 0, 0)) +   guides(fill = "none")
+
+ggpubr::ggexport(p_overall + labs(tag = "Fungi"), width = 4000, height = 2500, res = reso,
+                 filename = paste0("Figures/microbial-diversity/lefse/", region, "_SHM_cropsys.png"))
+
+
+
+
+
+
+
+
 
 
 

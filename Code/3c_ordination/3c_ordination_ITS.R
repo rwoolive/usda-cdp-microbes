@@ -150,9 +150,9 @@ dev.off()
 # by season/year
 png(paste0("Figures/microbial-diversity/nmds/all-data/",region,"_ssnyr.png"), width=1000, height=1000, res = 150)
 plot(s$sites, type="n", xlim=xlims, ylim=ylims, xlab=bquote(NMDS1~"("*.(round(c1*100,0))*"%)"), ylab=bquote(NMDS2~"("*.(round(c2*100,0))*"%)"), las=1) #  , ylim=c(-1.1,1.5)
-with(dat_plot, points(s$sites,  scaling =scl, pch =21, bg = alpha(ssnyrcols[Season.Year], 0.9))) # [-which(divdat$new.name %in% rem),]
+with(dat_plot, points(s$sites,  scaling =scl, pch =c(21:24)[Cropping.system], bg = alpha(ssnyrcols[Season.Year], 0.9))) # [-which(divdat$new.name %in% rem),]
 #with(dat_plot, legend("topleft", legend=levels(Season.Year), bty="n", col="black", pch=21, pt.cex=1.5, pt.bg=alpha(ssnyrcols,0.8))) # [-which(divdat$new.name %in% rem),]
-ordiellipse(m, group=dat_plot$Season.Year, col = alpha(ssnyrcols, 0.9), label=F, draw="polygon", border = "black"  ) # [-which(divdat$new.name %in% rem)]
+#ordiellipse(m, group=dat_plot$Season.Year, col = alpha(ssnyrcols, 0.9), label=F, draw="polygon", border = "black"  ) # [-which(divdat$new.name %in% rem)]
 dev.off()
 
 # by season
@@ -179,6 +179,17 @@ with(dat_plot, points(s$sites,  scaling =scl, pch =21, bg = alpha(cropsyscols[Cr
 #with(dat_plot, legend("bottomleft", legend=levels(Cropping.system), bty="n", col="black", pch=21, pt.cex=1.5, pt.bg=alpha(cropsyscols,0.8)))
 ordiellipse(m, group=dat_plot$Cropping.system, col = alpha(cropsyscols, 0.9), label=F, draw="polygon", border = "black"  )
 dev.off()
+
+# by cover x cropsys
+dat_plot$Cover.Cropping.system <- as.factor(paste0(dat_plot$Cover, "_", dat_plot$Cropping.system))
+png(paste0("Figures/microbial-diversity/nmds/all-data/",region,"_cover-cropsys.png"), width=800, height=850, res = 150)
+plot(s$sites, type="n", xlim=xlims, ylim=ylims, xlab=bquote(NMDS1~"("*.(round(c1*100,0))*"%)"), ylab=bquote(NMDS2~"("*.(round(c2*100,0))*"%)"), las=1)
+with(dat_plot, points(s$sites,  scaling =scl, pch =c(21:24)[Cropping.system], bg = alpha(covercols[Cover], 0.8)))
+with(dat_plot, legend("bottomright", legend=levels(Cover), bty="n", col="black", pch=21, pt.cex=1.5, pt.bg=alpha(covercols,0.8)))
+with(dat_plot, legend("bottomleft", legend=levels(Cropping.system), bty="n", col="black", pch=c(21:24), pt.cex=1.5, pt.bg="black"))
+#ordiellipse(m, group=dat_plot$Cover.Cropping.system, col = alpha(covercols, 0.9), label=F, draw="polygon", border = "black"  )
+dev.off()
+
 
 
 
@@ -612,6 +623,106 @@ permmod2 <- round(as.data.frame(permmod), 3)
 write.csv(permmod2, paste0("Model-output/permanova/",name,"_permanova.csv"))
 
 
+### permanova: subset to each cropping system
+mod.effects <- data.frame(effect=c("Cover","Season.Year", "Residual","Total")) 
+
+# Corn-Corn-Corn
+divmat_pa_year2 <- divmat_pa[which(dat_plot$Cropping.system=="Corn-Corn-Corn"),]
+divdat_year2 <- dat_plot[which(dat_plot$Cropping.system=="Corn-Corn-Corn"),]
+permmod <- adonis2(divmat_pa_year2 ~ Cover + Season.Year, data = divdat_year2, by = "term",
+                   method="bray", permutations = 499, strata = divdat_year2$Replicate)
+permmod2 <- round(as.data.frame(permmod), 3)
+# append to a mod.effects dataframe
+ssp <- paste0("F=", permmod2$F, ", Df=", permmod2$Df, ", p=", permmod2$`Pr(>F)`, ", R2=", permmod2$R2)
+mod.effects$'Corn-Corn-Corn' <- ssp
+
+# Soybean-Soybean-Soybean
+divmat_pa_year2 <- divmat_pa[which(dat_plot$Cropping.system=="Soybean-Soybean-Soybean"),]
+divdat_year2 <- dat_plot[which(dat_plot$Cropping.system=="Soybean-Soybean-Soybean"),]
+permmod <- adonis2(divmat_pa_year2 ~ Cover + Season.Year, data = divdat_year2, by = "term",
+                   method="bray", permutations = 499, strata = divdat_year2$Replicate)
+permmod2 <- round(as.data.frame(permmod), 3)
+# append to a mod.effects dataframe
+ssp <- paste0("F=", permmod2$F, ", Df=", permmod2$Df, ", p=", permmod2$`Pr(>F)`, ", R2=", permmod2$R2)
+mod.effects$'Soybean-Soybean-Soybean' <- ssp
+
+# Corn-Soybean-Corn
+divmat_pa_year2 <- divmat_pa[which(dat_plot$Cropping.system=="Corn-Soybean-Corn"),]
+divdat_year2 <- dat_plot[which(dat_plot$Cropping.system=="Corn-Soybean-Corn"),]
+permmod <- adonis2(divmat_pa_year2 ~ Cover + Season.Year, data = divdat_year2, by = "term",
+                   method="bray", permutations = 499, strata = divdat_year2$Replicate)
+permmod2 <- round(as.data.frame(permmod), 3)
+# append to a mod.effects dataframe
+ssp <- paste0("F=", permmod2$F, ", Df=", permmod2$Df, ", p=", permmod2$`Pr(>F)`, ", R2=", permmod2$R2)
+mod.effects$'Corn-Soybean-Corn' <- ssp
+
+# Corn-Cotton-Soybean
+divmat_pa_year2 <- divmat_pa[which(dat_plot$Cropping.system=="Corn-Cotton-Soybean"),]
+divdat_year2 <- dat_plot[which(dat_plot$Cropping.system=="Corn-Cotton-Soybean"),]
+permmod <- adonis2(divmat_pa_year2 ~ Cover + Season.Year, data = divdat_year2, by = "term",
+                   method="bray", permutations = 499, strata = divdat_year2$Replicate)
+permmod2 <- round(as.data.frame(permmod), 3)
+# append to a mod.effects dataframe
+ssp <- paste0("F=", permmod2$F, ", Df=", permmod2$Df, ", p=", permmod2$`Pr(>F)`, ", R2=", permmod2$R2)
+mod.effects$'Corn-Cotton-Soybean' <- ssp
+
+write.csv(mod.effects, paste0("Model-output/permanova/",name,"_permanova_cover crop effect by cropping system.csv"))
+
+
+### permanova: subset to each cover
+mod.effects <- data.frame(effect=c("Cropping.system","Season.Year","Residual","Total")) 
+
+# No cover
+divmat_pa_year2 <- divmat_pa[which(dat_plot$Cover=="No cover"),]
+divdat_year2 <- dat_plot[which(dat_plot$Cover=="No cover"),]
+permmod <- adonis2(divmat_pa_year2 ~ Cropping.system + Season.Year, data = divdat_year2, by = "term",
+                   method="bray", permutations = 499, strata = divdat_year2$Replicate)
+permmod2 <- round(as.data.frame(permmod), 3)
+# append to a mod.effects dataframe
+ssp <- paste0("F=", permmod2$F, ", Df=", permmod2$Df, ", p=", permmod2$`Pr(>F)`, ", R2=", permmod2$R2)
+mod.effects$'No cover' <- ssp
+
+# Wheat
+divmat_pa_year2 <- divmat_pa[which(dat_plot$Cover=="Wheat"),]
+divdat_year2 <- dat_plot[which(dat_plot$Cover=="Wheat"),]
+permmod <- adonis2(divmat_pa_year2 ~ Cropping.system + Season.Year, data = divdat_year2, by = "term",
+                   method="bray", permutations = 499, strata = divdat_year2$Replicate)
+permmod2 <- round(as.data.frame(permmod), 3)
+# append to a mod.effects dataframe
+ssp <- paste0("F=", permmod2$F, ", Df=", permmod2$Df, ", p=", permmod2$`Pr(>F)`, ", R2=", permmod2$R2)
+mod.effects$'Wheat' <- ssp
+
+# Clover
+divmat_pa_year2 <- divmat_pa[which(dat_plot$Cover=="Clover"),]
+divdat_year2 <- dat_plot[which(dat_plot$Cover=="Clover"),]
+permmod <- adonis2(divmat_pa_year2 ~ Cropping.system + Season.Year, data = divdat_year2, by = "term",
+                   method="bray", permutations = 499, strata = divdat_year2$Replicate)
+permmod2 <- round(as.data.frame(permmod), 3)
+# append to a mod.effects dataframe
+ssp <- paste0("F=", permmod2$F, ", Df=", permmod2$Df, ", p=", permmod2$`Pr(>F)`, ", R2=", permmod2$R2)
+mod.effects$'Clover' <- ssp
+
+# Wheat-Clover
+divmat_pa_year2 <- divmat_pa[which(dat_plot$Cover=="Wheat-Clover"),]
+divdat_year2 <- dat_plot[which(dat_plot$Cover=="Wheat-Clover"),]
+permmod <- adonis2(divmat_pa_year2 ~ Cropping.system + Season.Year, data = divdat_year2, by = "term",
+                   method="bray", permutations = 499, strata = divdat_year2$Replicate)
+permmod2 <- round(as.data.frame(permmod), 3)
+# append to a mod.effects dataframe
+ssp <- paste0("F=", permmod2$F, ", Df=", permmod2$Df, ", p=", permmod2$`Pr(>F)`, ", R2=", permmod2$R2)
+mod.effects$'Wheat-Clover' <- ssp
+
+# SHM
+divmat_pa_year2 <- divmat_pa[which(dat_plot$Cover=="SHM"),]
+divdat_year2 <- dat_plot[which(dat_plot$Cover=="SHM"),]
+permmod <- adonis2(divmat_pa_year2 ~ Cropping.system + Season.Year, data = divdat_year2, by = "term",
+                   method="bray", permutations = 499, strata = divdat_year2$Replicate)
+permmod2 <- round(as.data.frame(permmod), 3)
+# append to a mod.effects dataframe
+ssp <- paste0("F=", permmod2$F, ", Df=", permmod2$Df, ", p=", permmod2$`Pr(>F)`, ", R2=", permmod2$R2)
+mod.effects$'SHM' <- ssp
+
+write.csv(mod.effects, paste0("Model-output/permanova/",name,"_permanova_cropping system effect by cover.csv"))
 
 
 

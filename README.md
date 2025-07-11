@@ -1,1 +1,1 @@
-# usda-cdp-microbes
+Data and R code associated with the manuscript Wooliver et al. 2025, submitted to Frontiers in Microbiology July 11, 2025. Raw sequence data associated with this analysis are available at NCBI SRA under BioProject ID PRJNA1265188.

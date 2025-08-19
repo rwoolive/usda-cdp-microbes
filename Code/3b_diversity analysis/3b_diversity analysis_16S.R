@@ -102,7 +102,7 @@ write.csv(soildat, paste0("Processed-data/sequences/soil_", region, "-diversity.
 ### and we will model separately for each Year or Season.Year
 
 
-responses <- c("bac_richness", #"bac_shannon.div", "bac_simpson.div", "bac_invsimpson.div", "bac_evenness",
+responses <- c("bac_richness", "bac_shannon.div", "bac_simpson.div", "bac_invsimpson.div", "bac_evenness",
                "GMC", "noN", "nhN", "WEC",  "MBC", "BG", "NAG", "PHOS") # "WEN", "inorgN", 
 resp_l <- length(responses)
 

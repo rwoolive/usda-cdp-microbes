@@ -71,7 +71,7 @@ yrcols <- c("white", "purple", "aquamarine3", "brown2", "blue")
 
 
 # response variables:
-dat <- dat %>% mutate(across(c("bac_richness", #"bac_shannon.div", "bac_simpson.div", "bac_invsimpson.div", "bac_evenness",
+dat <- dat %>% mutate(across(c("bac_richness", "bac_shannon.div", "bac_invsimpson.div", #"bac_simpson.div", "bac_evenness",
                                                "fun_richness", #"fun_shannon.div", "fun_simpson.div", "fun_invsimpson.div", "fun_evenness",
                                                "amf_relabund", "amf_richness", #"amf_shannon.div", "amf_simpson.div", "amf_invsimpson.div", "amf_evenness",
                                                "plantpath_relabund", "plantpath_richness", #"plantpath_shannon.div", "plantpath_simpson.div", "plantpath_invsimpson.div", "plantpath_evenness",
@@ -99,23 +99,23 @@ seasons <- c("Fall 2020",
              "Spring 2023", "Summer 2023", "Fall 2023",
              "Spring 2024", "Summer 2024", "Fall 2024")
 
-resps <- c("bac_richness", #"bac_shannon.div", "bac_simpson.div", "bac_invsimpson.div", "bac_evenness",
+resps <- c("bac_richness", "bac_shannon.div",  "bac_invsimpson.div", #"bac_simpson.div", "bac_evenness",
            "fun_richness", #"fun_shannon.div", "fun_simpson.div", "fun_invsimpson.div", "fun_evenness",
            "amf_richness","amf_relabund",  #"amf_shannon.div", "amf_simpson.div", "amf_invsimpson.div", "amf_evenness",
            "plantpath_richness","plantpath_relabund",  #"plantpath_shannon.div", "plantpath_simpson.div", "plantpath_invsimpson.div", "plantpath_evenness",
            "sap_richness", "sap_relabund")
 lets <- LETTERS[(1:length(resps))]
-mains <- c("Bacteria richness", "Fungi richness", 
+mains <- c("Bacteria richness", "Bacteria Shannon diversity", "Bacteria Inverse Simpson diversity", "Fungi richness", 
            "AMF richness", "AMF relative abundance", 
            "Plant pathogen richness", "Plant pathogen relative abundance", 
            "Saprotroph richness", "Saprotroph relative abundance" )
-regions <- c("16S", "ITS", "AMF", "ITS", "plant pathogen", "ITS", "saprotroph", "ITS")
-heights <- c(rep(2.5, 7), 2.5)
+regions <- c("16S", "16S", "16S", "ITS", "AMF", "ITS", "plant pathogen", "ITS", "saprotroph", "ITS")
+heights <- c(rep(2.5, 9), 2.5)
 nox <- rep("", length(seasons))
-xaxes <- list(nox, nox, nox, nox,
+xaxes <- list(nox, nox, nox, nox, nox, nox,
               nox, nox, nox, nox)
-widths <- c(8.5, rep(8.5,7))
-legs <- c( T, rep(F, 7))
+widths <- c(8.5, rep(8.5,9))
+legs <- c( T, rep(F, ))
 
 
 

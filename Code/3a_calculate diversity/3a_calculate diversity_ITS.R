@@ -376,6 +376,8 @@ ggpubr::ggexport(p, filename = paste0("Figures/relative abundance/", region,"_li
 ### Because of insufficient sequence coverage, bacterial data from x samples, archaeal data from x samples, and fungal data from x samples were discarded. One sample (“X”) was removed from downstream analyses due to a large disparity in diversity and community composition from all other sequences.
 #### rarefy to rar reads
 sampsize <- rowSums(abunds2[1:1040,]) # gives the number of sequences for each plot
+write.csv(data.frame(sample=rownames(abunds2[1:1040,]), sampsize=sampsize), paste0("Raw-data/sequence/",sampdate,"/",name,"/seqtab/6sampling depth.csv"))
+range(sampsize)
 sort(sampsize)[1:20]
 sort(sampsize, decreasing = T)[1:20]
 remove <- c(sampsize[which(sampsize<rar)], sampsize[names(sampsize) %in% c("316_Summer_2021")]) 

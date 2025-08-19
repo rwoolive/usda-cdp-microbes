@@ -356,6 +356,8 @@ rar <- 5000
 
 #### rarefy to "rar" reads
 sampsize <- rowSums(abunds2[1:1040,]) # gives the number of sequences for each plot
+write.csv(data.frame(sample=rownames(abunds2[1:1040,]), sampsize=sampsize), paste0("Raw-data/sequence/",sampdate,"/",name,"/seqtab/6sampling depth.csv"))
+range(sampsize)
 sort(sampsize)[1:50]
 sort(sampsize, decreasing = T)[1:20]
 remove <- c(sampsize[which(sampsize<rar)], sampsize[names(sampsize) %in% c("203_Summer_2024", "114_Fall_2024")]) 

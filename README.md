@@ -1,1 +1,3 @@
-Data and R code associated with the manuscript Wooliver et al. 2025, submitted to Frontiers in Microbiology July 11, 2025. Raw sequence data associated with this analysis are available at NCBI SRA under BioProject ID PRJNA1265188.
+Data and R code associated with the manuscript "Microbial communities and their association with soil health indicators under row cash crop and cover crop diversification: A case study", published in Frontiers in Microbiology (link: https://www.frontiersin.org/journals/microbiology/articles/10.3389/fmicb.2025.1664417/full). 
+
+Raw sequence data associated with this analysis are available at NCBI SRA under BioProject ID PRJNA1265188.
